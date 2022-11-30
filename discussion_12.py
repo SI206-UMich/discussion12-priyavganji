@@ -16,6 +16,9 @@ def setUpDatabase(db_name):
 # TASK 1
 # CREATE TABLE FOR EMPLOYEE INFORMATION IN DATABASE AND ADD INFORMATION
 def create_employee_table(cur, conn):
+    cur.execute("DROP TABLE IF EXISTS employess")
+    cur.execute("CREATE TABLE IF NOT EXISTS employees (employee_id INTEGER UNIQUE PRIMARY KEY, first_name TEXT, last_name TEXT, job_id INTEGER, hire_date TEXT, salary INTEGER)")
+    conn.commit()
     pass
 
 # ADD EMPLOYEE'S INFORMTION TO THE TABLE
@@ -27,19 +30,65 @@ def add_employee(filename, cur, conn):
     file_data = f.read()
     f.close()
     # THE REST IS UP TO YOU
+    data = json.loads(file_data)
+    #print (file_data)
+    for item in data:
+        id = item["employee_id"]
+        f_name = item["first_name"]
+        l_name = item["last_name"]
+        date = item["hire_date"]
+        job = item["job_id"]
+        sal = item["salary"]
+    
+        cur.execute(
+        """
+        INSERT OR IGNORE INTO employees (employee_id, first_name, last_name, job_id, hire_date, salary) VALUES(?, ?, ?, ?, ?, ?)
+        """,
+        (id,f_name,l_name,date,job,sal)
+        )
+
+    conn.commit()
     pass
 
 # TASK 2: GET JOB AND HIRE_DATE INFORMATION
 def job_and_hire_date(cur, conn):
-    pass
+    cur.execute(
+        """
+        SELECT employees.hire_data, jobs.job_title 
+        FROM employees
+        JOIN jobs
+        ON jobs.job_id = employees.job.id
+        """
+    )
+    res = cur.fetchall()
+    conn.commit()
+    s = sorted(res, key= lambda x: x[0])
+    return s[0][1]
+    
 
 # TASK 3: IDENTIFY PROBLEMATIC SALARY DATA
 # Apply JOIN clause to match individual employees
 def problematic_salary(cur, conn):
-    pass
+    cur.execute(
+        """
+        SELECT employees.first_name, employees.last_name
+        FROM employees
+        JOIN jobs ON jobs.job_id = employees.job_id
+        WHERE employees.salary < jobs.min_salary OR employees,salary > jobs.max_salary  
+        """
+    )
+    res = cur.fetchall()
+    conn.commit()
+    return res
+
 
 # TASK 4: VISUALIZATION
 def visualization_salary_data(cur, conn):
+
+
+
+
+
     pass
 
 class TestDiscussion12(unittest.TestCase):
